@@ -1,0 +1,6 @@
+.site-footer{display:block;padding:0;background:rgba(5,3,5,.82);backdrop-filter:blur(12px);border-top:1px solid rgba(255,190,220,.10);color:#bcb4ba;font-family:"Manrope",sans-serif;font-size:11px;line-height:1.8;letter-spacing:.08em}
+.footer-content{max-width:1600px;margin:auto;padding:30px 6.3%;display:flex;align-items:center;justify-content:space-between;gap:18px 32px}
+.site-footer a{color:#e7dee4;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:4px;transition:color .25s,text-decoration-color .25s}
+.site-footer a:hover{color:var(--pink);text-decoration-color:rgba(232,154,191,.5)}
+@media(max-width:600px){.footer-content{padding:28px 6%;flex-direction:column;text-align:center;gap:14px}.footer-copyright span{display:block}.site-footer{font-size:10px;letter-spacing:.07em}}
+@media(prefers-reduced-motion:reduce){.site-footer a{transition:none}}

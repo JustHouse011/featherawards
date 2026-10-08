@@ -1,0 +1,88 @@
+/* Refinements preserve the original layout, assets and visual language. */
+main{background:radial-gradient(ellipse at 80% 17%,#28132533,transparent 25%),radial-gradient(ellipse at 82% 54%,#4e20302e,transparent 24%),#050406}
+.hero{min-height:850px;padding-top:205px;padding-bottom:90px}
+.hero-copy{width:115%;max-width:700px;padding-bottom:20px}
+.hero h1{font-size:clamp(70px,8.5vw,128px);line-height:1.01;letter-spacing:-.065em;margin:15px 0 23px;background:none;-webkit-text-fill-color:inherit;padding:0 .06em .06em 0}
+.hero h1>span{display:block;width:max-content;max-width:none;background:linear-gradient(115deg,#fff 0%,#fff5fa 62%,#e8b7cf 95%);background-clip:text;-webkit-text-fill-color:transparent}
+.trophy-scene{top:152px;height:660px;right:2.5%;width:48%}
+.trophy-halo{inset:-10% -18% -4%;background:radial-gradient(ellipse at 56% 35%,#efbac735,transparent 43%),radial-gradient(ellipse at 75% 54%,#b2648630,transparent 49%),radial-gradient(ellipse at 30% 68%,#82608922,transparent 53%);filter:blur(32px)}
+.trophy-beams{position:absolute;inset:-12% -5% -3%;overflow:hidden;pointer-events:none}
+.trophy-beams i{position:absolute;left:21%;top:-10%;width:38px;height:120%;background:linear-gradient(90deg,transparent,#e8abc223,transparent);filter:blur(8px);transform:rotate(-23deg);animation:trophy-beam-drift 17s ease-in-out infinite alternate}
+.trophy-beams i:nth-child(2){left:68%;width:58px;transform:rotate(13deg);background:linear-gradient(90deg,transparent,#e9b9c81c,#b9a2ca18,transparent);animation-duration:20s;animation-delay:-8s}
+.trophy-beams i:nth-child(3){left:46%;width:13px;transform:rotate(-18deg);background:linear-gradient(90deg,#7edace0d,#b4a1e02a,#dcb97e20,transparent);filter:blur(4px);animation-duration:14s;animation-delay:-5s}
+.trophy-glints{position:absolute;inset:0;z-index:4;pointer-events:none}
+.trophy-glints i{position:absolute;width:3px;height:3px;border-radius:50%;background:#ffe5ef;left:18%;top:38%;opacity:0;box-shadow:0 0 5px 2px #ffcbe05c;animation:crystal-glint 13s ease-in-out infinite;animation-delay:3s}
+.trophy-glints i:before,.trophy-glints i:after{content:'';position:absolute;left:-9px;top:1px;width:21px;height:1px;background:linear-gradient(90deg,transparent,#fff3f8b8,transparent);transform:rotate(-25deg)}
+.trophy-glints i:after{transform:rotate(65deg)}
+.trophy-glints i:nth-child(2){left:78%;top:47%;animation-duration:17s;animation-delay:8s}
+.trophy-glints i:nth-child(3){left:62%;top:82%;animation-duration:19s;animation-delay:12s}
+.crystal-button{transition:transform .3s,filter .3s}
+.crystal-button:not(.crystal-button--quiet):after{animation:internal-reflection 12s ease-in-out infinite}
+.crystal-button:hover{transform:translateY(-2px);filter:drop-shadow(0 0 9px #ed8bb95c) brightness(1.07)}
+.crystal-button:active{transform:translateY(0) scale(.985)}
+.crystal-button--quiet:hover{filter:brightness(1.13)}
+.event-details{padding-top:36px;padding-bottom:49px}
+.event-fact{min-height:82px}
+.event-fact svg,.field>svg{transition:opacity .3s,filter .3s;opacity:.85}
+.event-fact:hover svg,.field:focus-within>svg{opacity:1;filter:brightness(1.13)}
+.rsvp-section:before{content:'';position:absolute;inset:-100px -10% -70px;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 78% 55%,#7c3b5330,transparent 64%)}
+.glass-panel{padding:39px 49px 38px;min-height:445px;background:linear-gradient(135deg,#70455612,transparent 34%,#a8728c10),linear-gradient(120deg,#43283365,#180f16ad 44%,#4728367a);backdrop-filter:blur(27px) saturate(145%);border-color:#f6bdd449;box-shadow:inset 0 1px 2px #ffe6f34d,inset 0 -1px 0 #d389af29,0 16px 55px #0008,0 0 25px #b5577e12}
+.rsvp-header{gap:32px;margin-bottom:37px}
+.rsvp-header h2{padding-bottom:4px;line-height:1.2}
+.rsvp-header>div>p:last-child{margin-top:5px}
+.field input,.labelled-field input,.labelled-field select{min-height:56px}
+.field>svg{top:18px}
+.field input,.labelled-field input,.labelled-field select,.labelled-field textarea{transition:border-color .3s,box-shadow .3s,background .3s}
+.field input:focus,.labelled-field input:focus,.labelled-field select:focus,.labelled-field textarea:focus{box-shadow:0 0 0 1px #e89abf15,inset 0 0 16px #d389af0b,0 0 12px #d389af0c}
+.form-grid{gap:16px 30px}
+.form-actions{margin-top:32px}
+.step-indicator{margin-top:12px}
+.step-indicator li:after{z-index:0}
+.step-indicator .is-complete:after{background:#bda3ae77}
+.step-connector{position:absolute;height:1px;top:19px;left:calc(50% + 19px);right:calc(-50% + 19px);background:#e6abc9;box-shadow:0 0 4px #de96b644;transform-origin:left center;z-index:1}
+.step-indicator .is-current>span{background:conic-gradient(from 20deg at 30% 35%,#f4c9df,#c4769c,#eaaecb,#bc6d94,#f3c7dc);box-shadow:inset 0 1px 2px #fff0f899,0 0 13px #e293bb50}
+.step-indicator li>span{transition:border-color .35s,box-shadow .35s}
+.signature-section{min-height:590px;padding-top:55px;padding-bottom:80px;background:radial-gradient(ellipse at 96% 58%,#3b172a28,transparent 35%)}
+.signature-section>img{height:calc(100% + 26px);top:-13px}
+.signature-copy .eyebrow{margin-bottom:17px}
+.signature-copy h2{line-height:.97}
+.campaign-values{margin-top:38px}
+@keyframes trophy-beam-drift{from{translate:-8px 0;opacity:.55}to{translate:16px 7px;opacity:.9}}
+@keyframes crystal-glint{0%,61%,78%,100%{opacity:0;transform:scale(.7)}68%{opacity:.65;transform:scale(1)}72%{opacity:.15;transform:scale(.9)}}
+@keyframes internal-reflection{0%,100%{opacity:.83}50%{opacity:1}}
+@media(min-width:1450px){.hero{min-height:915px}.trophy-scene{height:720px}.hero h1{font-size:133px}}
+@media(max-width:1100px){.hero{min-height:730px;padding-top:185px;padding-bottom:70px}.hero h1{font-size:8.55vw}.trophy-scene{top:137px;height:575px}.hero-copy>.eyebrow{font-size:16px;letter-spacing:.3em}.event-details{padding-top:30px;padding-bottom:40px}.glass-panel{padding:35px 42px;min-height:430px}.rsvp-header{gap:24px}.rsvp-header h2{font-size:50px}.rsvp-header>div>p:last-child{font-size:15px}.step-indicator{min-width:250px}.signature-section{min-height:505px;padding-top:38px;padding-bottom:60px}}
+@media(max-width:900px){.hero{min-height:680px;padding-top:185px}.hero-copy>.eyebrow{font-size:12px;letter-spacing:.28em}.hero h1{font-size:8.7vw}.trophy-scene{top:150px;height:510px}.glass-panel{padding:35px 33px}.rsvp-header{gap:26px;margin-bottom:37px}.step-indicator{width:100%;min-width:0;margin-bottom:20px}.signature-section{min-height:470px}.signature-copy h2{font-size:8.2vw}}
+@media(max-width:600px){.hero{display:grid;grid-template-columns:minmax(0,1fr);padding:139px 6% 42px;min-height:0;row-gap:0}.hero-copy{display:contents}.hero-copy>.eyebrow{grid-row:1;font-size:11px;letter-spacing:.28em}.hero h1{grid-row:2;font-size:17.1vw;line-height:1.03;margin:13px 0 0;padding:0 0 .05em;text-align:center;letter-spacing:-.065em}.hero h1>span{margin:auto;max-width:100%}.trophy-scene{position:relative;grid-row:3;top:auto;right:auto;width:88%;height:360px;margin:-4px auto 8px}.trophy-halo{inset:-8% -5% -3%;filter:blur(22px)}.hero-intro{grid-row:4;margin-top:2px}.hero-actions{grid-row:5;margin-top:27px}.event-details{padding-top:23px;padding-bottom:37px}.event-fact{min-height:73px}.glass-panel{padding:30px 24px;min-height:560px;backdrop-filter:blur(14px) saturate(125%)}.rsvp-header{gap:25px;margin-bottom:33px}.rsvp-header h2{font-size:10.5vw;line-height:1.25;padding-bottom:3px}.rsvp-header>div>p:last-child{font-size:13px}.step-indicator{margin-top:0;margin-bottom:20px}.step-connector{top:16px;left:calc(50% + 16px);right:calc(-50% + 16px)}.field input{min-height:54px}.field>svg{top:17px}.form-grid{gap:15px}.form-actions{margin-top:28px}.signature-section{min-height:665px;padding:355px 6% 47px}.signature-section>img{height:480px;top:-12px}.signature-copy .eyebrow{margin-bottom:16px}.signature-copy h2{font-size:16.3vw;line-height:.98}.campaign-values{margin-top:30px}}
+@media(max-width:380px){.hero-copy>.eyebrow{font-size:10px;letter-spacing:.24em}.trophy-scene{height:330px}.glass-panel{padding-left:20px;padding-right:20px}.rsvp-header h2{font-size:10.4vw}}
+@media(max-width:600px){.hero h1{font-size:15vw}.hero h1>span{max-width:none}.signature-copy h2{font-size:15vw}}
+@media(prefers-reduced-motion:reduce){.trophy-beams i,.trophy-glints i,.crystal-button:after{animation:none!important}.trophy-glints i{opacity:0}.crystal-button:active{transform:none}.step-indicator li>span,.field input,.labelled-field input,.labelled-field select,.labelled-field textarea,.event-fact svg,.field>svg{transition:none}}
+
+
+/* Cinzel Regular display typography; layout and non-display type are preserved. */
+.hero h1,.rsvp-header h2,.signature-copy h2,.vip-confirmation h2,.vip-confirmation>.eyebrow:first-of-type{font-family:"Cinzel",serif;font-weight:400}
+.hero h1{font-size:clamp(62px,7.4vw,112px);line-height:.95;letter-spacing:-.025em}
+.rsvp-header h2{font-size:clamp(30px,3.6vw,48px);line-height:1.6;letter-spacing:-.025em}
+.signature-copy h2{font-size:clamp(42px,5.9vw,81px);line-height:1.1;letter-spacing:-.025em}
+.vip-confirmation h2{font-size:clamp(34px,5vw,68px);line-height:1.2;letter-spacing:-.025em}
+@media(min-width:1450px){.hero h1{font-size:116px}}
+@media(max-width:1100px){.hero h1{font-size:7.4vw}.rsvp-header h2{font-size:39px;line-height:1.5}}
+@media(max-width:900px){.hero h1{font-size:7.5vw}.signature-copy h2{font-size:6.2vw}}
+@media(max-width:600px){.hero h1{font-size:12vw;line-height:.95}.rsvp-header h2{font-size:7.9vw;line-height:1.65}.signature-copy h2{font-size:12vw;line-height:1.1}.vip-confirmation h2{font-size:35px;line-height:1.25}}
+
+/* Frame the portrait's upper face; overscan covers only the 6px parallax. */
+.signature-section{min-height:660px}
+.signature-section>img{width:55%;height:calc(100% + 14px);top:-7px;object-position:50% 15%}
+@media(max-width:1100px){.signature-section{min-height:560px}.signature-section>img{object-position:50% 17%}}
+@media(max-width:900px){.signature-section{min-height:520px}.signature-section>img{object-position:50% 20%}}
+@media(max-width:600px){.signature-section{min-height:665px}.signature-section>img{width:100%;height:480px;object-position:50% 12%}}
+
+/* Preserve the desktop copy's top anchor while the CTA group shrinks. */
+@media(min-width:601px){.hero-copy{margin-bottom:67px}}
+@media(min-width:601px) and (max-width:1100px){.hero-copy{margin-bottom:64px}}
+
+/* Supplied logo replaces the constructed wordmark without changing navigation placement. */
+.wordmark--image{height:112px;justify-content:center}
+.wordmark--image::before{content:none}
+.wordmark--image>img{display:block;width:100%;height:112px;object-fit:contain;flex-shrink:0}
+@media(max-width:600px){.wordmark--image>img{height:80px}}

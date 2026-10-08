@@ -1,0 +1,65 @@
+﻿import { useEffect, useRef, useState } from 'react';
+import type { FormEvent } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { UserRound, Mail, Phone, ArrowLeft, Check, Download, CalendarPlus, LoaderCircle } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { CrystalButton } from './CrystalButton';
+import { GlassPanel } from './GlassPanel';
+import { downloadFile, saveCalendar, submitRSVP } from '../lib/rsvp';
+import type { RSVPData, RSVPSubmit } from '../lib/rsvp';
+const steps = ['YOUR DETAILS', 'ATTENDANCE', 'GUEST', 'CONFIRM'];
+const initial: RSVPData = { firstName: '', surname: '', email: '', mobile: '', attending: null, bringingGuest: false, guestFirstName: '', guestSurname: '' };
+type FieldName = keyof RSVPData;
+function Field({ name, label, value, onChange, error, icon: Icon, type = 'text', autoComplete }: { name: string; label: string; value: string; onChange: (value: string) => void; error?: string; icon: LucideIcon; type?: string; autoComplete?: string }) {
+  return <div className={`field ${error ? 'field--error' : ''}`}><label className="sr-only" htmlFor={name}>{label}</label><Icon size={21} strokeWidth={1} aria-hidden="true"/><input id={name} name={name} type={type} maxLength={name === 'email' ? 254 : name === 'mobile' ? 40 : 100} placeholder={label} value={value} onChange={event => onChange(event.target.value)} autoComplete={autoComplete} aria-invalid={!!error} aria-describedby={error ? `${name}-error` : undefined}/>{error && <span className="field-error" id={`${name}-error`}>{error}</span>}</div>;
+}
+export function RSVPForm({ response, submit = submitRSVP }: { response: { attending: boolean; request: number } | null; submit?: RSVPSubmit }) {
+  const [data, setData] = useState<RSVPData>(initial);
+  const [step, setStep] = useState(0);
+  const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [submissionError, setSubmissionError] = useState('');
+  const [website, setWebsite] = useState('');
+  const submissionLock = useRef(false);
+  const submissionComplete = useRef(false);
+  const reduced = useReducedMotion();
+  const formRef = useRef<HTMLFormElement>(null);
+  const stepHeading = useRef<HTMLHeadingElement>(null);
+  const shouldFocus = useRef(false);
+  useEffect(() => { if (response && !submissionLock.current) { submissionComplete.current = false; setData(old => ({ ...old, attending: response.attending })); setSuccess(false); setStep(0); } }, [response]);
+  const update = <K extends FieldName>(key: K, value: RSVPData[K]) => { setData(old => ({ ...old, [key]: value })); setErrors(old => ({ ...old, [key]: undefined })); };
+  function validate() {
+    const found: Partial<Record<FieldName, string>> = {};
+    if (step === 0) {
+      if (!data.firstName.trim()) found.firstName = 'Please enter your first name.';
+      if (!data.surname.trim()) found.surname = 'Please enter your surname.';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) found.email = 'Enter a valid email address.';
+      const digits = data.mobile.replace(/\D/g, '');
+      if (!/^[+\d\s().-]+$/.test(data.mobile) || digits.length < 7 || digits.length > 15) found.mobile = 'Enter a valid mobile number (7–15 digits).';
+    }
+    if (step === 1 && data.attending === null) found.attending = 'Please select your attendance.';
+    if (step === 2 && data.bringingGuest) { if (!data.guestFirstName.trim()) found.guestFirstName = 'Please enter your guest’s first name.'; if (!data.guestSurname.trim()) found.guestSurname = 'Please enter your guest’s surname.'; }
+    setErrors(found);
+    if (Object.keys(found).length) { requestAnimationFrame(() => { const first = formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]'); first?.focus(); }); return false; }
+    return true;
+  }
+  function changeStep(next: number) { shouldFocus.current = true; setErrors({}); setStep(next); }
+  async function next(event: FormEvent) {
+    event.preventDefault(); if (submissionComplete.current || submissionLock.current || submitting || !validate()) return;
+    if (step < steps.length - 1) { changeStep(step === 1 && data.attending === false ? steps.length - 1 : step + 1); return; }
+    submissionLock.current = true; setSubmitting(true); setSubmissionError('');
+    try { await submit({ ...data, firstName: data.firstName.trim(), surname: data.surname.trim(), email: data.email.trim().toLowerCase(), mobile: data.mobile.trim(), bringingGuest: data.attending === true && data.bringingGuest, guestFirstName: data.attending && data.bringingGuest ? data.guestFirstName.trim() : '', guestSurname: data.attending && data.bringingGuest ? data.guestSurname.trim() : '' }, website); submissionComplete.current = true; setSuccess(true); shouldFocus.current = true; }
+    catch { setSubmissionError('We couldn’t confirm your RSVP. Please try again. Your details are still here.'); }
+    finally { submissionLock.current = false; setSubmitting(false); }
+  }
+  const textField = (key: 'firstName' | 'surname' | 'email' | 'mobile' | 'guestFirstName' | 'guestSurname', label: string, icon: LucideIcon = UserRound, type = 'text', autoComplete?: string) => <Field name={key} label={label} value={data[key]} onChange={value => update(key, value)} error={errors[key]} icon={icon} type={type} autoComplete={autoComplete}/>;
+  const summary = <dl className="confirmation-summary"><div><dt>YOUR NAME</dt><dd>{data.firstName} {data.surname}</dd></div><div><dt>ATTENDANCE</dt><dd>{data.attending ? 'Yes — I’ll be there' : 'Unfortunately, I can’t attend'}</dd></div><div><dt>EMAIL ADDRESS</dt><dd>{data.email}</dd></div><div><dt>MOBILE NUMBER</dt><dd>{data.mobile}</dd></div><div><dt>PLUS-ONE</dt><dd>{data.attending && data.bringingGuest ? 'Yes — I’m bringing someone' : 'No plus-one'}</dd></div>{data.attending && data.bringingGuest && <div><dt>GUEST NAME</dt><dd>{data.guestFirstName} {data.guestSurname}</dd></div>}</dl>;
+  function saveInvitation() {
+    const escaped = `${data.firstName} ${data.surname}`.replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[char]!));
+    downloadFile(`<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200"><defs><radialGradient id="g"><stop stop-color="#673047"/><stop offset="1" stop-color="#080509"/></radialGradient></defs><rect width="900" height="1200" fill="url(#g)"/><path d="M80 140L450 40L820 140V1060L450 1160L80 1060Z" fill="none" stroke="#e89abf"/><g fill="#f6edf2" text-anchor="middle" font-family="Georgia,serif"><text x="450" y="260" font-size="26" letter-spacing="5">FEATHER AWARDS XVIII</text><text x="450" y="400" font-size="48">YOU’RE ON THE LIST.</text><text x="450" y="530" font-size="48" textLength="700" lengthAdjust="spacingAndGlyphs">${escaped}</text><text x="450" y="700" font-size="27">05 NOVEMBER 2026</text><text x="450" y="760" font-size="25">18:00 RED CARPET</text><text x="450" y="820" font-size="25">THE VENUE · MELROSE ARCH</text><text x="450" y="990" font-size="24">MAKE YOUR SIGNATURE STATEMENT.</text><text x="450" y="1090" font-size="14">RSVP CONFIRMED</text></g></svg>`, 'feather-awards-invitation.svg', 'image/svg+xml');
+  }
+  return <motion.section id="rsvp" className="rsvp-section" aria-labelledby="rsvp-heading" initial={{ opacity: reduced ? 1 : 0, y: reduced ? 0 : 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .1 }} transition={{ duration: .8 }}><GlassPanel><AnimatePresence mode="wait" onExitComplete={() => {}}>{success ? <motion.div key="success" className="vip-confirmation" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: reduced ? 0 : .8 }} onAnimationComplete={() => { stepHeading.current?.focus(); shouldFocus.current = false; }}><div className="confirmation-burst" aria-hidden="true"/><p className="eyebrow">{data.attending ? 'YOU’RE ON THE LIST.' : 'THANK YOU FOR LETTING US KNOW.'}</p><h2 ref={stepHeading} tabIndex={-1} id="rsvp-heading">{data.firstName}<br/>{data.surname}</h2><p className="eyebrow">FEATHER AWARDS XVIII</p>{data.attending ? <><p>05 NOVEMBER 2026<br/>18:00 RED CARPET<br/>THE VENUE · MELROSE ARCH</p><p className="invitation-statement">MAKE YOUR SIGNATURE STATEMENT.</p><div className="invitation-actions"><button type="button" onClick={saveInvitation}><Download size={18}/> SAVE INVITATION</button><button type="button" onClick={saveCalendar}><CalendarPlus size={18}/> ADD TO CALENDAR</button></div></> : <p>We’ll miss your signature statement.<br/>We hope to celebrate with you another time.</p>}<p className="preview-message" role="status">Your RSVP has been received. Please check your email.</p><button type="button" className="text-button" onClick={() => { submissionComplete.current = false; setSuccess(false); changeStep(0); }}>EDIT MY RESPONSE</button></motion.div> : <motion.div key="form" exit={{ opacity: 0 }}><div className="rsvp-header"><div><p className="eyebrow">RSVP</p><h2 id="rsvp-heading">GET ON THE LIST</h2><p>Complete your details to confirm your attendance.</p></div><ol className="step-indicator" aria-label="RSVP progress">{steps.map((label, index) => <li key={label} className={`${index === step ? 'is-current' : ''} ${index < step ? 'is-complete' : ''}`} aria-current={index === step ? 'step' : undefined}><span>{index < step ? <Check size={15} aria-hidden="true"/> : index + 1}</span><small>{index === step ? label : ''}</small>{index < steps.length - 1 && <motion.i className="step-connector" aria-hidden="true" initial={false} animate={{ scaleX: index < step ? 1 : 0 }} transition={{ duration: reduced ? 0 : .4, ease: 'easeInOut' }}/>} </li>)}</ol></div><form ref={formRef} noValidate onSubmit={next}><div hidden aria-hidden="true"><label htmlFor="rsvp-website">Website</label><input id="rsvp-website" name="website" type="text" tabIndex={-1} autoComplete="off" value={website} onChange={event => setWebsite(event.target.value)}/></div><div className="step-stage"><AnimatePresence mode="wait"><motion.div key={step} className="form-step" initial={{ opacity: reduced ? 1 : 0, x: reduced ? 0 : 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: reduced ? 0 : -20 }} transition={{ duration: reduced ? 0 : .35 }} onAnimationComplete={() => { if (shouldFocus.current) { stepHeading.current?.focus(); shouldFocus.current = false; } }}><h3 className={step === 0 ? 'sr-only' : 'step-heading'} tabIndex={-1} ref={stepHeading}>{steps[step]}</h3>{step === 0 && <div className="form-grid">{textField('firstName', 'First Name', UserRound, 'text', 'given-name')}{textField('surname', 'Surname', UserRound, 'text', 'family-name')}{textField('email', 'Email Address', Mail, 'email', 'email')}{textField('mobile', 'Mobile Number', Phone, 'tel', 'tel')}</div>}{step === 1 && <fieldset className="choice-group"><legend>Will you be attending?</legend>{[{value:true,label:'YES — I’LL BE THERE'}, {value:false,label:'UNFORTUNATELY, I CAN’T ATTEND'}].map(({value,label}) => <label className={`choice ${data.attending === value ? 'selected' : ''}`} key={label}><input type="radio" name="attending" checked={data.attending === value} onChange={() => update('attending', value)} aria-invalid={!!errors.attending} aria-describedby={errors.attending ? 'attendance-error' : undefined}/><span>{label}</span></label>)}{errors.attending && <p id="attendance-error" className="error-message">{errors.attending}</p>}<p className="field-hint">If you can’t attend, you’ll go straight to confirmation.</p></fieldset>}{step === 2 && <><fieldset className="choice-group"><legend>Will you be bringing a guest?</legend>{[{value:false,label:'NO — JUST ME'}, {value:true,label:'YES — I’M BRINGING SOMEONE'}].map(({value,label}) => <label className={`choice ${data.bringingGuest === value ? 'selected' : ''}`} key={label}><input type="radio" name="bringingGuest" checked={data.bringingGuest === value} onChange={() => update('bringingGuest', value)}/><span>{label}</span></label>)}</fieldset>{data.bringingGuest && <div className="form-grid guest-fields">{textField('guestFirstName', 'Guest First Name')}{textField('guestSurname', 'Guest Surname')}</div>}</>}{step === steps.length - 1 && <><p className="review-intro">Your signature evening. Your details, all in one place.</p>{summary}<p className="preview-message">Please check your details before confirming your RSVP.</p></>}</motion.div></AnimatePresence></div>{submissionError && <p role="alert" className="error-message">{submissionError}</p>}<div className="form-actions">{step > 0 && <button type="button" className="back-button" disabled={submitting} onClick={() => changeStep(step === steps.length - 1 && data.attending === false ? 1 : step - 1)}><ArrowLeft size={18}/> BACK</button>}<CrystalButton type="submit" disabled={submitting} arrow={!submitting}>{submitting ? <><LoaderCircle className="spinner" size={20}/> CONFIRMING…</> : step === steps.length - 1 ? 'CONFIRM MY RSVP' : 'NEXT'}</CrystalButton></div></form></motion.div>}</AnimatePresence></GlassPanel></motion.section>;
+}
+
+

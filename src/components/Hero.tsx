@@ -1,0 +1,14 @@
+import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'framer-motion';
+import type { MouseEvent } from 'react';
+import { CrystalButton } from './CrystalButton';
+import { HeroTitleEffects } from './HeroTitleEffects';
+export function Hero({ onRespond }: { onRespond: (attending: boolean) => void }) {
+  const reduced = useReducedMotion();
+  const pointerX = useMotionValue(0), pointerY = useMotionValue(0);
+  const x = useSpring(pointerX, { stiffness: 35, damping: 20 }), y = useSpring(pointerY, { stiffness: 35, damping: 20 });
+  const lightX = useTransform(x, [-1, 1], [-8, 8]), lightY = useTransform(y, [-1, 1], [-8, 8]);
+  const rotateY = useTransform(x, [-1, 1], [-2, 2]), rotateX = useTransform(y, [-1, 1], [2, -2]);
+  const parallax = (event: MouseEvent<HTMLElement>) => { if (reduced || !window.matchMedia('(pointer: fine) and (min-width: 901px)').matches) return; const rect = event.currentTarget.getBoundingClientRect(); pointerX.set((event.clientX - rect.left) / rect.width * 2 - 1); pointerY.set((event.clientY - rect.top) / rect.height * 2 - 1); };
+  const reveal = (delay: number) => ({ initial: { opacity: reduced ? 1 : 0, y: reduced ? 0 : 18 }, animate: { opacity: 1, y: 0 }, transition: { duration: reduced ? 0 : .85, delay: reduced ? 0 : delay } });
+  return <section id="about" className="hero" onMouseMove={parallax} onMouseLeave={() => { pointerX.set(0); pointerY.set(0); }} aria-labelledby="hero-heading"><motion.div className="hero-atmosphere" style={reduced ? {} : { x: lightX, y: lightY }} aria-hidden="true"><i/><i/><i/><i/></motion.div><div className="hero-copy"><motion.p {...reveal(.1)} className="eyebrow">ARE YOU READY TO MAKE A</motion.p><HeroTitleEffects/><motion.p {...reveal(.6)} className="hero-intro">If YES, then you are officially invited to the<br/><span>18TH ANNUAL FEATHER AWARDS.</span></motion.p><motion.div {...reveal(.8)} className="hero-actions"><CrystalButton onClick={() => onRespond(true)}>YES, I’M READY</CrystalButton></motion.div></div><motion.div className="trophy-scene" initial={{ opacity: reduced ? 1 : 0, scale: reduced ? 1 : .97 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: reduced ? 0 : 1.4, delay: reduced ? 0 : .3 }}><div className="trophy-halo" aria-hidden="true"/><div className="trophy-beams" aria-hidden="true"><i/><i/><i/></div><motion.div className="trophy-parallax" style={reduced ? {} : { rotateX, rotateY }}><motion.img className="trophy" src="/assets/trophy.webp" width="768" height="922" alt="Feather Awards trophy: a faceted pink crystal with the Feather Awards logo on a clear crystal and silver pedestal" fetchPriority="high" animate={reduced ? { y: 0 } : { y: [0, -6, 0] }} transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}/></motion.div><div className="trophy-floor" aria-hidden="true"/><span className="light-star" aria-hidden="true"/><div className="trophy-glints" aria-hidden="true"><i/><i/><i/></div></motion.div></section>;
+}

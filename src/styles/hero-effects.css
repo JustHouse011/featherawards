@@ -1,0 +1,39 @@
+/* Hero lighting only: font metrics, geometry and content stay in existing styles. */
+.hero .pearl-title>.pearl-title-line{position:relative;background:linear-gradient(105deg,#fffdfd 0%,#fff 14%,#f8e8ef 27%,#fff 39%,#edc4d7 55%,#fff 68%,#e7a7c5 82%,#fff8fb 92%,#d989b0 100%);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 1px #ffffff45,0 0 8px #f4b6d314,0 0 22px #d2699d0d}
+.pearl-title-line:before{content:attr(data-word);position:absolute;inset:0;background:linear-gradient(120deg,transparent 46%,#fff8fb88 49%,#ffffffa6 50%,#f3bfd55c 51%,transparent 54%);background-size:300% 100%;background-position:125% 0;background-clip:text;-webkit-background-clip:text;color:transparent;-webkit-text-fill-color:transparent;text-shadow:none;pointer-events:none;opacity:0;animation:pearl-title-reflection 10s ease-in-out infinite;animation-delay:1.9s}
+.pearl-title-line:last-child:before{animation-delay:2.15s}
+.pearl-curve{position:absolute;left:0;width:100%;height:.2em;overflow:visible;pointer-events:none;opacity:.48}
+.pearl-curve--upper{top:-.045em}
+.pearl-curve--lower{bottom:-.05em;opacity:.42}
+.pearl-travelling-light{opacity:0;filter:drop-shadow(0 0 2px #f3bfd5);animation:pearl-path-light 11s linear infinite}
+.pearl-glint{position:absolute;width:2px;height:2px;border-radius:50%;background:#fffafb;box-shadow:0 0 5px 1px #f3bfd540;pointer-events:none;opacity:0;animation:pearl-title-glint 13s ease-in-out infinite}
+.pearl-glint:before,.pearl-glint:after{content:"";position:absolute;left:50%;top:50%;height:1px;width:13px;transform:translate(-50%,-50%);background:linear-gradient(90deg,transparent,#fffafb,transparent)}
+.pearl-glint:after{width:10px;transform:translate(-50%,-50%) rotate(90deg)}
+.pearl-glint--a{left:24%;top:14%;animation-delay:1.5s;animation-duration:13s}
+.pearl-glint--b{left:12%;bottom:6%;animation-delay:5.5s;animation-duration:17s}
+.pearl-glint--c{left:57%;bottom:12%;animation-delay:9.5s;animation-duration:19s}
+.pearl-glint--d{right:3%;top:36%;width:3px;height:3px;animation-delay:12.2s;animation-duration:23s}
+.hero-copy:before{content:"";position:absolute;inset:-16px -6px -12px -18px;z-index:-1;border:1px solid #ffffff0b;background:linear-gradient(135deg,#ffffff09,#d67aa406,#ffffff03);backdrop-filter:blur(12px) saturate(115%);-webkit-backdrop-filter:blur(12px) saturate(115%);mask-image:linear-gradient(90deg,transparent,#000 12%,#0008 65%,transparent);pointer-events:none}
+.hero-copy:after{content:"";position:absolute;inset:-12px -6px;z-index:-1;pointer-events:none;background:linear-gradient(120deg,transparent 47%,#fff3f80a 49.9%,#f3bfd50c 50%,transparent 52%);background-size:300% 100%;opacity:0;animation:pearl-glass-reflection 13s ease-in-out infinite}
+.hero:before{content:"";position:absolute;inset:15% 0 8% 20%;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 76% 48%,#e394b52b,#c56c9920 24%,#7a39570b 57%,transparent 75%)}
+.hero .trophy-floor{background:radial-gradient(ellipse,#e58fb82e,#e58fb80d 40%,transparent 70%);filter:blur(13px)}
+.trophy-scene:after{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;background:linear-gradient(120deg,transparent 46%,#fff5fa1c 50%,#f3bfd510 52%,transparent 56%);background-size:300% 100%;mask-image:url('/assets/trophy.webp');mask-position:center;mask-repeat:no-repeat;mask-size:contain;opacity:0;animation:pearl-trophy-reflection 10.5s ease-in-out infinite;animation-delay:3.1s}
+.hero .trophy-beams i{animation-duration:24s}
+.hero .trophy-beams i:nth-child(2){animation-duration:28s}
+.hero .trophy-beams i:nth-child(3){animation-duration:21s}
+.hero-actions .crystal-button:not(.crystal-button--quiet){backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+.hero-actions .crystal-button:not(.crystal-button--quiet):after{border-top-color:#fff3f8; border-bottom-color:#c9769d;box-shadow:inset 0 4px 9px #ffe6f347,inset 0 -4px 8px #53223829}
+.hero-actions .crystal-button--quiet{background:linear-gradient(110deg,#ebb1cd60,#98637b40,#ebb1cd60)}
+.hero-actions .crystal-button--quiet:before{background:#0a070ad9;transition:background .3s}
+.hero-actions .crystal-button--quiet:hover:before{background:#1b1017e6}
+.navbar--scrolled{background:#07040799;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 1px 0 #ffffff0d}
+.navbar{animation:pearl-navigation-enter .7s ease-out both}
+@keyframes pearl-title-reflection{0%,54%{background-position:125% 0;opacity:0}57%{opacity:.6}72%{background-position:-25% 0;opacity:.6}75%,100%{background-position:-25% 0;opacity:0}}
+@keyframes pearl-title-glint{0%,3%,15%,100%{opacity:0;transform:scale(.4) rotate(-6deg)}9%{opacity:.8;transform:scale(1) rotate(8deg)}}
+@keyframes pearl-path-light{0%,60%,77%,100%{opacity:0}62%{opacity:.55}70%{opacity:.9}75%{opacity:.2}}
+@keyframes pearl-glass-reflection{0%,59%{background-position:125% 0;opacity:0}63%{opacity:.55}77%{background-position:-25% 0;opacity:.55}81%,100%{background-position:-25% 0;opacity:0}}
+@keyframes pearl-trophy-reflection{0%,54%{background-position:125% 0;opacity:0}58%{opacity:.7}69%{background-position:-25% 0;opacity:.7}73%,100%{background-position:-25% 0;opacity:0}}
+@keyframes pearl-navigation-enter{from{opacity:0}to{opacity:1}}
+@media(max-width:900px){.pearl-curve--upper{width:82%}.pearl-curve--lower{width:88%}.pearl-glint--c{display:none}.hero-copy:before{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}}
+@media(max-width:600px){.pearl-curve,.pearl-glint--b,.pearl-glint--c{display:none}.hero-copy:before,.hero-copy:after{display:none}.trophy-scene:after{display:none}.hero .trophy-beams i:nth-child(3){display:none}.hero .trophy-floor{filter:blur(8px)}.hero-actions .crystal-button:not(.crystal-button--quiet){backdrop-filter:none;-webkit-backdrop-filter:none}}
+@media(prefers-reduced-motion:reduce){.pearl-title-line:before,.pearl-glint,.pearl-travelling-light,.hero-copy:after,.trophy-scene:after,.navbar{animation:none!important}.pearl-glint,.pearl-travelling-light{display:none}.pearl-curve path{stroke-dasharray:none!important;stroke-dashoffset:0!important}}
