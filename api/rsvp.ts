@@ -60,46 +60,7 @@ export function createEmails(data: RSVPRecord, config: EmailConfig, timestamp: s
 
 type Request = IncomingMessage & { body?: unknown };
 type SendEmails = (emails: ReturnType<typeof createEmails>) => Promise<boolean>;
-interface DatabaseConfig { url: string; secret: string }
-export function databaseRow(data: RSVPRecord) {
-  return { first_name: data.firstName, surname: data.surname, email: data.email, mobile: data.mobile,
-    attendance: data.attending ? 'ATTENDING' : 'NOT ATTENDING', has_guest: data.bringingGuest,
-    guest_first_name: data.bringingGuest ? data.guestFirstName : null,
-    guest_surname: data.bringingGuest ? data.guestSurname : null };
-}
-export class RSVPPersistenceError extends Error {
-  constructor(public operation: 'lookup' | 'insert', public status?: number) { super('RSVP persistence failed'); }
-}
-export async function saveRSVP(data: RSVPRecord, config: DatabaseConfig) {
-  const row = databaseRow(data);
-  const endpoint = new URL('/rest/v1/rsvps', config.url);
-  const headers: Record<string, string> = { apikey: config.secret, 'Content-Type': 'application/json' };
-  // New Supabase secret keys belong in apikey; only legacy JWT keys are bearer tokens.
-  if (/^[\w-]+\.[\w-]+\.[\w-]+$/.test(config.secret)) headers.Authorization = `Bearer ${config.secret}`;
-  const lookup = new URL(endpoint);
-  lookup.searchParams.set('select', 'id');
-  lookup.searchParams.set('limit', '1');
-  for (const [column, value] of Object.entries(row)) {
-    lookup.searchParams.set(column, value === null ? 'is.null' : `eq.${typeof value === 'string' ? JSON.stringify(value) : value}`);
-  }
-  // Identical sequential retries reuse a saved row, including retries after email failure.
-  // This is not atomic: a database uniqueness/idempotency constraint is needed for races.
-  let operation: 'lookup' | 'insert' = 'lookup';
-  try {
-    const existing = await fetch(lookup, { headers, redirect: 'error', signal: AbortSignal.timeout(8000) });
-    if (!existing.ok) throw new RSVPPersistenceError(operation, existing.status);
-    const records: unknown = await existing.json();
-    if (!Array.isArray(records) || records.length > 1 || records.some(record => !record || (typeof record.id !== 'number' && typeof record.id !== 'string'))) throw new RSVPPersistenceError(operation);
-    if (records.length) return;
-    operation = 'insert';
-    const inserted = await fetch(endpoint, { method: 'POST', headers: { ...headers, Prefer: 'return=minimal' }, body: JSON.stringify(row), redirect: 'error', signal: AbortSignal.timeout(8000) });
-    if (!inserted.ok) throw new RSVPPersistenceError(operation, inserted.status);
-  } catch (error) {
-    throw error instanceof RSVPPersistenceError ? error : new RSVPPersistenceError(operation);
-  }
-}
-type SaveRSVP = (data: RSVPRecord, config: DatabaseConfig) => Promise<void>;
-export function createRSVPHandler(send?: SendEmails, env: NodeJS.ProcessEnv = process.env, save: SaveRSVP = saveRSVP) {
+export function createRSVPHandler(send?: SendEmails, env: NodeJS.ProcessEnv = process.env) {
   return async (req: Request, res: ServerResponse) => {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store');
@@ -121,23 +82,12 @@ export function createRSVPHandler(send?: SendEmails, env: NodeJS.ProcessEnv = pr
       const { RESEND_API_KEY: key, RSVP_FROM_EMAIL: from, RSVP_NOTIFICATION_EMAIL: notification, RSVP_REPLY_TO_EMAIL: replyTo } = env;
       const senderAddress = from?.match(/<([^<>]+)>$/)?.[1] ?? from;
       if (!key || !from || /[\r\n]/.test(from) || !senderAddress || !validEmail(senderAddress) || !notification || !validEmail(notification) || (replyTo && !validEmail(replyTo))) { reply(503, false, 'RSVP is temporarily unavailable. Please try again later.'); return; }
-      const { SUPABASE_URL: databaseURL, SUPABASE_SECRET_KEY: databaseSecret } = env;
-      let validDatabaseURL = false;
-      try { const parsed = new URL(databaseURL || ''); validDatabaseURL = parsed.protocol === 'https:' && !parsed.username && !parsed.password && parsed.pathname === '/' && !parsed.search && !parsed.hash; } catch { /* Invalid/missing configuration is handled below. */ }
-      if (!validDatabaseURL || !databaseSecret || /[\r\n]/.test(databaseSecret)) {
-        console.error('[rsvp] Supabase configuration missing or invalid');
-        reply(503, false, 'RSVP is temporarily unavailable. Please try again later.'); return;
-      }
-      await save(data, { url: databaseURL!, secret: databaseSecret });
+      // A future RSVP repository belongs here, before delivery. Email is not a database.
       const emails = createEmails(data, { from, notification, replyTo }, new Date().toISOString());
       const delivered = send ? await send(emails) : await new Resend(key).batch.send(emails).then(result => !result.error && result.data?.data.length === 2);
       if (!delivered) { reply(502, false, 'We could not confirm your RSVP. Please try again.'); return; }
       reply(200, true, 'RSVP confirmed');
     } catch (error) {
-      if (error instanceof RSVPPersistenceError) {
-        console.error('[rsvp] Supabase persistence failed', { operation: error.operation, status: error.status ?? 'unavailable' });
-        reply(503, false, 'We could not save your RSVP. Please try again.'); return;
-      }
       reply(error instanceof InvalidRSVP ? 400 : 502, false, error instanceof InvalidRSVP ? 'Please check your RSVP details.' : 'We could not confirm your RSVP. Please try again.');
     }
   };

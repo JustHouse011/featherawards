@@ -26,8 +26,6 @@ Copy `.env.example` to an ignored `.env.local` for local server testing, or conf
 - `RSVP_FROM_EMAIL`: verified sender address, optionally `Feather Awards <address@verified-domain>`.
 - `RSVP_NOTIFICATION_EMAIL`: the internal team's single notification address.
 - `RSVP_REPLY_TO_EMAIL`: optional guest-email Reply-To address. Internal notifications reply to the invitee's validated email.
-- `SUPABASE_URL`: the HTTPS Supabase project URL (server only).
-- `SUPABASE_SECRET_KEY`: private Supabase server secret key, never a `VITE_` variable.
 
 Never prefix these with `VITE_`. No real credentials are supplied. `.env` and `.env.*` are ignored; only `.env.example` is intended for version control. `.vercel/` is also ignored.
 
@@ -66,7 +64,7 @@ The frontend uses the existing loading, error and success treatments, a synchron
 
 `vercel.json` selects Vite, `npm run build`, and `dist`. Vercel discovers `api/rsvp.ts` as a Node function; it is not bundled into browser assets. There are no client-side path routes requiring a catch-all rewrite, so none is added that could shadow API/assets. TypeScript checks include frontend, API and Vite configuration. See [Vercel Node function documentation](https://vercel.com/docs/functions/runtimes/node-js).
 
-Source changes on `main` are deployed through the existing GitHub/Vercel connection.
+No commit, push, deployment or domain setup has been performed.
 
 ## Verification and remaining production work
 
@@ -74,15 +72,7 @@ Tests cover server validation, honeypot rejection, HTML escaping, separate recip
 
 Email acceptance is not delivery confirmation. Before launch, configure a verified Resend sender/domain and the required private variables, then perform real delivery checks for both an attendance and a decline. These have not been performed without credentials.
 
-Validated RSVPs are persisted server-side through Supabase's REST API at `/rest/v1/rsvps`, before the unchanged Resend batch. No Supabase library is added to the frontend. The secret key is sent in the `apikey` header; legacy JWT keys additionally use bearer authorization. Requests have an eight-second timeout and reject redirects so credentials cannot be forwarded to a different destination. See [Supabase API key guidance](https://supabase.com/docs/guides/getting-started/api-keys).
-
-The row contains `first_name`, `surname`, normalized `email`, `mobile`, `attendance` (`ATTENDING` or `NOT ATTENDING`), `has_guest`, `guest_first_name`, and `guest_surname`. Guest names are null without a guest. `id` and `created_at` are omitted, allowing the database defaults to generate them. The table must be accessible through the Supabase Data API with server-key SELECT and INSERT permissions; browser/anonymous write access is unnecessary.
-
-Before insertion, a filtered lookup checks all eight mapped values for an identical saved response. A sequential retry, including one after an email failure, reuses that row and retries the existing emails. Different responses insert a new row. This avoids sequential duplicate writes without changing the supplied schema, but is not atomic across simultaneous requests. A database uniqueness constraint or an idempotency RPC is required to guarantee concurrency-safe deduplication. No database schema or policies are modified by this change.
-
-Missing Supabase configuration, lookup failures, or insertion failures return a safe 503 and stop email delivery. Server logs contain only the failed operation and HTTP status, never credentials, request payloads, or raw provider error bodies. If persistence succeeds and email sending fails, the row remains saved and the existing safe email failure response is returned; a retry checks for that row first. Email delivery itself is not deduplicated, and database persistence plus email delivery is not a distributed transaction.
-
-Automated persistence tests use mocked HTTP responses, with no real credentials or production database writes. Verify a real attending/declining submission after redeployment using the already configured production environment. Production rate limiting and delivery reconciliation remain separate future improvements.
+There is no database or durable RSVP record yet. The marked repository boundary in `api/rsvp.ts` is where durable RSVP creation/update and a uniqueness policy should be added before sending. Client guards are not persistent duplicate protection; retries after a network timeout may send another batch. Editing a response currently submits a new response rather than updating a stored record. Production rate limiting or stronger bot controls should be considered beyond the requested basic honeypot. Delivery tracking/retry reconciliation should accompany future persistent storage.
 
 ## Assets
 
