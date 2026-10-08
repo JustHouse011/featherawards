@@ -1,8 +1,35 @@
 import { test, expect } from '@playwright/test';
-import { createRSVPHandler } from '../api/rsvp';
-import { createEmails, validateRSVP } from '../server/rsvp';
+import { readFileSync, writeFileSync, mkdirSync, unlinkSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import ts from 'typescript';
+import { createRSVPHandler, createEmails, validateRSVP } from '../api/rsvp';
 const payload = { firstName: ' Lerato ', surname: 'Mokoena', email: ' LERATO@EXAMPLE.COM ', mobile: '+27 82 123 4567', attending: true, bringingGuest: false, guestFirstName: '', guestSurname: '', website: '' };
 const env = { RESEND_API_KEY: 'test-placeholder-not-a-real-key', RSVP_FROM_EMAIL: 'Feather Awards <sender@example.com>', RSVP_NOTIFICATION_EMAIL: 'team@example.com', RSVP_REPLY_TO_EMAIL: 'reply@example.com' };
+test('compiled endpoint imports and executes in native Node ESM without server helpers', () => {
+  const source = readFileSync('api/rsvp.ts', 'utf8');
+  const compiled = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, verbatimModuleSyntax: true } }).outputText;
+  expect(compiled).not.toMatch(/from\s+['"]\.{1,2}\//);
+  mkdirSync('.local', { recursive: true });
+  const filename = resolve('.local', `rsvp-native-${randomUUID()}.mjs`);
+  writeFileSync(filename, compiled);
+  try {
+    const output = execFileSync(process.execPath, ['--input-type=module', '-e', `
+      const { default: endpoint, createRSVPHandler } = await import(${JSON.stringify(pathToFileURL(filename).href)});
+      let status = 0, result;
+      const response = { setHeader() {}, set statusCode(value) { status = value; }, end(value) { result = JSON.parse(value); } };
+      await endpoint({ method: 'GET', headers: {} }, response);
+      if (status !== 405) throw Error('Default endpoint did not execute');
+      const handler = createRSVPHandler(async emails => emails.length === 2, ${JSON.stringify(env)});
+      await handler({ method: 'POST', headers: { 'content-type': 'application/json' }, body: ${JSON.stringify(payload)} }, response);
+      if (status !== 200 || result.success !== true) throw Error('Compiled POST failed');
+      console.log('Native ESM GET and POST passed');
+    `], { encoding: 'utf8', timeout: 30000 });
+    expect(output).toContain('Native ESM GET and POST passed');
+  } finally { unlinkSync(filename); }
+});
 async function invoke(body: unknown = payload, options: { method?: string; contentType?: string; env?: typeof env; fail?: boolean; throws?: boolean } = {}) {
   let status = 0; let result: { success: boolean; message: string } | undefined;
   let sent: ReturnType<typeof createEmails> | undefined;

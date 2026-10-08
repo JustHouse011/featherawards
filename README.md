@@ -51,7 +51,7 @@ Never prefix these with `VITE_`. No real credentials are supplied. `.env` and `.
 
 The server rejects non-POST requests (405), non-JSON content (415), malformed/invalid inputs (400), and bodies over 8 KiB (413). It trims text, lowercases email, requires strict booleans, validates email/mobile, limits names to 100 characters, email to 254 and mobile to 40, and rejects control characters and unknown fields. Missing server configuration returns 503; provider errors return 502. Responses have `success` and a safe `message`, with no provider error details or credentials. Success is `200 {"success":true,"message":"RSVP confirmed"}`.
 
-`server/rsvp.ts` separates validation and email generation from delivery. `api/rsvp.ts` uses the official Resend SDK to submit two distinct messages in a single batch:
+`api/rsvp.ts` contains validation, email generation and delivery in one self-contained serverless entry point, with no relative runtime imports. It uses the official Resend SDK to submit two distinct messages in a single batch:
 
 1. Attendee: the near-black/pink HTML confirmation, event information, and optional guest name. Decline: an acknowledgement, without an attendance confirmation.
 2. Team: name, contact details, attendance, plus-one information and UTC submission timestamp.
@@ -62,7 +62,7 @@ The frontend uses the existing loading, error and success treatments, a synchron
 
 ## Vercel preparation
 
-`vercel.json` selects Vite, `npm run build`, and `dist`. Vercel discovers `api/rsvp.ts` as a Node function; it is not bundled into browser assets. There are no client-side path routes requiring a catch-all rewrite, so none is added that could shadow API/assets. TypeScript checks include frontend, server helpers, API and Vite configuration. See [Vercel Node function documentation](https://vercel.com/docs/functions/runtimes/node-js).
+`vercel.json` selects Vite, `npm run build`, and `dist`. Vercel discovers `api/rsvp.ts` as a Node function; it is not bundled into browser assets. There are no client-side path routes requiring a catch-all rewrite, so none is added that could shadow API/assets. TypeScript checks include frontend, API and Vite configuration. See [Vercel Node function documentation](https://vercel.com/docs/functions/runtimes/node-js).
 
 No commit, push, deployment or domain setup has been performed.
 
