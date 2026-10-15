@@ -6,6 +6,9 @@ import logo3 from '../Assets/images/3.png';
 import logo4 from '../Assets/images/4.png';
 import logo5 from '../Assets/images/5.png';
 import logo6 from '../Assets/images/6.png';
+import logo7 from '../Assets/images/7.png';
+import logo8 from '../Assets/images/8.png';
+import logo9 from '../Assets/images/9.png';
 import '../styles/partners.css';
 
 const partners = [
@@ -15,6 +18,9 @@ const partners = [
   { src: logo4, alt: 'Multicoloured fingerprint partner logo' },
   { src: logo5, alt: 'Thami Dish Foundation logo' },
   { src: logo6, alt: 'Proudly South African logo' },
+  { src: logo7, alt: 'JAZI MY JOZI logo' },
+  { src: logo8, alt: 'Gauteng: It starts here logo' },
+  { src: logo9, alt: '100 African’s Original Gallo Music logo' },
 ];
 
 export function PartnersCarousel() {

@@ -64,7 +64,7 @@ The frontend uses the existing loading, error and success treatments, a synchron
 
 `vercel.json` selects Vite, `npm run build`, and `dist`. Vercel discovers `api/rsvp.ts` as a Node function; it is not bundled into browser assets. There are no client-side path routes requiring a catch-all rewrite, so none is added that could shadow API/assets. TypeScript checks include frontend, API and Vite configuration. See [Vercel Node function documentation](https://vercel.com/docs/functions/runtimes/node-js).
 
-No commit, push, deployment or domain setup has been performed.
+No deployment or domain setup has been performed.
 
 ## Verification and remaining production work
 
@@ -76,5 +76,4 @@ There is no database or durable RSVP record yet. The marked repository boundary 
 
 ## Assets
 
-Original trophies, campaign imagery, fonts and all six partner logos are retained. Manrope remains the UI font and Cinzel Regular the display font. Asset provenance is in `ASSETS.md`. Generated `dist/`, dependency directories, local caches, screenshots and test reports are ignored.
-
+Original trophies, campaign imagery, fonts and all nine partner logos are retained. Manrope remains the UI font and Cinzel Regular the display font. Asset provenance is in `ASSETS.md`. Generated `dist/`, dependency directories, local caches, screenshots and test reports are ignored.
