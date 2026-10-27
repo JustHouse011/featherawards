@@ -66,25 +66,42 @@ export function createRSVPHandler(send?: SendEmails, env: NodeJS.ProcessEnv = pr
     res.setHeader('Cache-Control', 'no-store');
     const reply = (status: number, success: boolean, message: string) => { res.statusCode = status; res.end(JSON.stringify({ success, message })); };
     if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); reply(405, false, 'Method not allowed.'); return; }
+    reply(403, false, 'RSVP registration is closed. New registrations are not being accepted.');
+    return;
     if (!/^application\/json(?:\s*;|$)/i.test(req.headers['content-type'] || '')) { reply(415, false, 'Please submit JSON.'); return; }
     try {
       // Vercel parses JSON bodies; also support raw bodies for direct/local requests.
       let body = req.body;
       if (body === undefined) {
         const chunks: Buffer[] = []; let size = 0;
-        for await (const chunk of req) { const buffer = Buffer.from(chunk); size += buffer.length; if (size > 8192) { reply(413, false, 'Request too large.'); return; } chunks.push(buffer); }
+        for await (const chunk of req as AsyncIterable<Buffer | string>) { const buffer = typeof chunk === 'string' ? Buffer.from(chunk) : Buffer.from(chunk); size += buffer.length; if (size > 8192) { reply(413, false, 'Request too large.'); return; } chunks.push(buffer); }
         body = Buffer.concat(chunks).toString('utf8');
       }
-      const serialized = typeof body === 'string' ? body : JSON.stringify(body);
+      let serialized = '';
+      if (typeof body === 'string') serialized = String(body);
+      else {
+        const candidate = JSON.stringify(body);
+        if (typeof candidate === 'string') serialized = candidate;
+      }
       if (!serialized || Buffer.byteLength(serialized) > 8192) { reply(413, false, 'Request too large.'); return; }
-      if (typeof body === 'string') { try { body = JSON.parse(body); } catch { throw new InvalidRSVP(); } }
+      if (typeof body === 'string') { try { body = JSON.parse(String(body)); } catch { throw new InvalidRSVP(); } }
       const data = validateRSVP(body);
-      const { RESEND_API_KEY: key, RSVP_FROM_EMAIL: from, RSVP_NOTIFICATION_EMAIL: notification, RSVP_REPLY_TO_EMAIL: replyTo } = env;
-      const senderAddress = from?.match(/<([^<>]+)>$/)?.[1] ?? from;
-      if (!key || !from || /[\r\n]/.test(from) || !senderAddress || !validEmail(senderAddress) || !notification || !validEmail(notification) || (replyTo && !validEmail(replyTo))) { reply(503, false, 'RSVP is temporarily unavailable. Please try again later.'); return; }
+      const key = env.RESEND_API_KEY ?? '';
+      const from = env.RSVP_FROM_EMAIL ?? '';
+      const notification = env.RSVP_NOTIFICATION_EMAIL ?? '';
+      const replyTo = env.RSVP_REPLY_TO_EMAIL ?? '';
+      if (!key || !from || /[\r\n]/.test(from)) { reply(503, false, 'RSVP is temporarily unavailable. Please try again later.'); return; }
+      const senderAddress = from.match(/<([^<>]+)>$/)?.[1] ?? from;
+      if (!senderAddress || !validEmail(senderAddress) || !validEmail(notification) || (replyTo && !validEmail(replyTo))) { reply(503, false, 'RSVP is temporarily unavailable. Please try again later.'); return; }
       // A future RSVP repository belongs here, before delivery. Email is not a database.
       const emails = createEmails(data, { from, notification, replyTo }, new Date().toISOString());
-      const delivered = send ? await send(emails) : await new Resend(key).batch.send(emails).then(result => !result.error && result.data?.data.length === 2);
+      let delivered: boolean;
+      const emailSender = send;
+      if (typeof emailSender === 'function') delivered = await emailSender!(emails);
+      else {
+        const result = await new Resend(key).batch.send(emails);
+        delivered = !result.error && result.data?.data.length === 2;
+      }
       if (!delivered) { reply(502, false, 'We could not confirm your RSVP. Please try again.'); return; }
       reply(200, true, 'RSVP confirmed');
     } catch (error) {
